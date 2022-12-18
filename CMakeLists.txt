@@ -65,17 +65,6 @@ endif ()
 ### Compile- and install-related commands.
 add_subdirectory(src)
 
-# Create and install CMake configuration files for your project that are
-# necessary to for other projects to call find_package(your_lib).
-include(InstallBasicPackageFiles)
-install_basic_package_files(${PROJECT_NAME}
-   VERSION ${${PROJECT_NAME}_VERSION}
-   COMPATIBILITY AnyNewerVersion
-   VARS_PREFIX ${PROJECT_NAME}
-   NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-# Add the uninstall target
-include(AddUninstallTarget)
-
 # Add integration tests (unit tests for each library should be in each subdirectory).
 if (BUILD_TESTING)
   add_subdirectory(test)
