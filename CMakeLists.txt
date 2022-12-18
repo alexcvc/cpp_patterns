@@ -62,6 +62,8 @@ if (NOT CMAKE_CONFIGURATION_TYPES)
   endif ()
 endif ()
 
+include_directories( src/include )
+
 ### Compile- and install-related commands.
 add_subdirectory(src)
 
