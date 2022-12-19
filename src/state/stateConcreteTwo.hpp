@@ -21,9 +21,9 @@ class StateConcreteTwo : public State<ConcreteContext> {
  public:
   /**
    * @brief constructor with Entry method
-   * @param observer - observer object
+   * @param context - context object
    */
-  StateConcreteTwo(ConcreteContext& observer) : State(observer) {
+  StateConcreteTwo(ConcreteContext& context) : State(context) {
     DoEnter();
   }
 

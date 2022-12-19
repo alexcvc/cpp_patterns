@@ -202,7 +202,7 @@ void TaskWorkerFsWatcher(std::stop_token token) {
 
   // start thread with stop fs-watcher task
   std::thread stop_watching_task([&]() {
-    // create observer
+    // create context
     while (true) {
       // Start of locked block
       std::unique_lock lck(task_event_filesystem.event_mutex);
@@ -261,13 +261,13 @@ void TaskWorker_Context(std::stop_token token) {
     task_event_concrete.event_condition.notify_all();
   });
 
-  // create observer
-  state::ConcreteContext observer;
+  // create context
+  state::ConcreteContext context;
   auto sooner = waitDurationDef;
 
   while (true) {
     // observe serves states
-    sooner = observer.Serve(waitDurationDef);
+    sooner = context.Serve(waitDurationDef);
     {
       // Start of locked block
       std::unique_lock lck(task_event_concrete.event_mutex);
