@@ -34,13 +34,11 @@ namespace state {
 template <class TContext>
 class State {
  public:
-  using StateUp = std::unique_ptr<State<TContext>>;
-
   /**
    * @brief Constructor
    * @param context
    */
-  State(TContext& context) : m_context(context) {}
+  State(TContext* context) : m_contextPtr(context) {}
 
   /**
    * @brief performs main operations in state.
@@ -48,10 +46,10 @@ class State {
    * @param context reference
    * @return optional new state
    */
-  [[nodiscard]] virtual std::optional<StateUp> DoServe() = 0;
+  [[nodiscard]] virtual std::optional<std::unique_ptr<State<TContext>>> DoServe() = 0;
 
  protected:
-  TContext& m_context;
+  TContext* m_contextPtr;
 
   /**
    * @brief this method should be executed only in constructor

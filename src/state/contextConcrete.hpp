@@ -64,9 +64,9 @@ class ConcreteContext : public Context {
     m_timer.Reset();
   }
 
- protected:
-  watch::TimerMs m_timer;     ///< timer
-
+ private:
+  std::unique_ptr<State<ConcreteContext>> m_state;  ///< current state
+  watch::TimerMs m_timer;                           ///< timer
 };
 
 }  // end of namespace state

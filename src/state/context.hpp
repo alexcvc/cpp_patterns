@@ -47,8 +47,6 @@ class Context {
    */
   [[nodiscard]] virtual std::chrono::milliseconds Serve(const std::chrono::milliseconds& next_sooner) = 0;
 
- protected:
-  std::unique_ptr<State<Context>> m_state;  ///< current state
 };
 
 }  // namespace state

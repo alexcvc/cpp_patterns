@@ -23,7 +23,7 @@ class StateConcreteTwo : public State<ConcreteContext> {
    * @brief constructor with Entry method
    * @param context - context object
    */
-  StateConcreteTwo(ConcreteContext& context) : State(context) {
+  StateConcreteTwo(ConcreteContext* context) : State(context) {
     DoEnter();
   }
 
@@ -32,7 +32,7 @@ class StateConcreteTwo : public State<ConcreteContext> {
    * @param context reference
    * @return optional new state
    */
-  [[nodiscard]] std::optional<StateUp> DoServe();
+  [[nodiscard]] std::optional<std::unique_ptr<State<ConcreteContext>>> DoServe();
 
  protected:
   /**

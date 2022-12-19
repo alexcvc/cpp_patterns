@@ -4,9 +4,11 @@
 //-----------------------------------------------------------------------------
 #include "contextConcrete.hpp"
 
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <spdlog/spdlog.h>
 
 #include "stateConcreteOne.hpp"
 
@@ -26,7 +28,7 @@ std::chrono::milliseconds ConcreteContext::Serve(const std::chrono::milliseconds
 
   // once started
   if (!m_state) {
-    m_state = std::move(std::make_unique<StateConcreteOne>(*this));
+    m_state.reset(new StateConcreteOne(this));
   }
 
   // handle state
@@ -36,13 +38,13 @@ std::chrono::milliseconds ConcreteContext::Serve(const std::chrono::milliseconds
 
   // estimate next sooner for timer
   if (m_timer.IsRunning()) {
-    if (auto sooner = m_timer.LeftTime(); (sooner.count() > 0) && (sooner < res_sooner)) {
+    if ( auto sooner = m_timer.LeftTime(); sooner < res_sooner ) {
       res_sooner = sooner;
     }
   }
 
-  if (res_sooner.count() < 0) {
-    res_sooner = 0ms;
+  if (res_sooner.count() <= 0) {
+    res_sooner = 1ms;
   }
   return res_sooner;
 }

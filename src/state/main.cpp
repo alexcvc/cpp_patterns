@@ -263,15 +263,16 @@ void TaskWorker_Context(std::stop_token token) {
 
   // create context
   state::ConcreteContext context;
-  auto sooner = waitDurationDef;
+  std::chrono::milliseconds sooner = waitDurationDef;
 
   while (true) {
     // observe serves states
     sooner = context.Serve(waitDurationDef);
     {
+      spdlog::info("condition waits for is {} ms", sooner.count());
       // Start of locked block
       std::unique_lock lck(task_event_concrete.event_mutex);
-      task_event_concrete.event_condition.wait_for(lck, std::chrono::milliseconds(sooner), [&, token]() {
+      task_event_concrete.event_condition.wait_for(lck, sooner, [&, token]() {
         // Condition for wake up
         return token.stop_requested();
       });
