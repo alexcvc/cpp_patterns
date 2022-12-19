@@ -164,11 +164,11 @@ static bool HandleGetChar() {
 void WakeUpRunningTasks(bool all_tasks_wakeup = true) {
   if (all_tasks_wakeup) {
     std::unique_lock lck(task_event_filesystem.event_mutex);
-    task_event_filesystem.event_condition.notify_one();  // Wakes up stop a file system watcher
+    task_event_filesystem.event_condition.notify_all();  // Wakes up stop a file system watcher
   }
   {
     std::unique_lock lck(task_event_concrete.event_mutex);
-    task_event_concrete.event_condition.notify_one();  // Wakes up a displacement task
+    task_event_concrete.event_condition.notify_all();  // Wakes up a displacement task
   }
 }
 
@@ -178,19 +178,21 @@ void WakeUpRunningTasks(bool all_tasks_wakeup = true) {
  */
 void TaskWorkerFsWatcher(std::stop_token token) {
   using namespace std::chrono_literals;
-  const auto waitDuration = 2s;
-  auto watcher = fswatch("/tmp");
+  auto watcher = fswatch("/home/tmp");
 
   // add watching events
   watcher.on(fswatch::Event::FILE_CREATED, [&]([[maybe_unused]] auto& event) {
+    spdlog::info("Filesystem event FILE_MODIFIED");
     WakeUpRunningTasks(false);  // Wake up sleeping tasks by an event in the file system
   });
 
   watcher.on(fswatch::Event::FILE_MODIFIED, [&]([[maybe_unused]] auto& event) {
+    spdlog::info("Filesystem event FILE_MODIFIED");
     WakeUpRunningTasks(false);  // Wake up sleeping tasks by an event in the file system
   });
 
   watcher.on(fswatch::Event::FILE_DELETED, [&]([[maybe_unused]] auto& event) {
+    spdlog::info("Filesystem event FILE_DELETED");
     WakeUpRunningTasks(false);  // Wake up sleeping tasks by an event in the file system
   });
 
@@ -206,9 +208,9 @@ void TaskWorkerFsWatcher(std::stop_token token) {
     while (true) {
       // Start of locked block
       std::unique_lock lck(task_event_filesystem.event_mutex);
-      task_event_filesystem.event_condition.wait(lck, [&, token]() {
+      task_event_filesystem.event_condition.wait_for(lck, 5000ms /*[&, token]() {
         return token.stop_requested();
-      });
+      }*/);
 
       //Stop if requested to stop
       if (token.stop_requested()) {
@@ -219,11 +221,13 @@ void TaskWorkerFsWatcher(std::stop_token token) {
     watcher.stop();
     // wakeup watcher via event in file system
     std::ofstream tmpfile;
-    tmpfile.open("/tmp/~watcher_wakeup", std::ios_base::trunc);
+    tmpfile.open("/home/tmp/~watcher_wakeup", std::ios_base::trunc);
     tmpfile << "Wakeup\n";
     tmpfile.close();
     spdlog::info("Stop filesystem watcher task stopped.");
   });
+
+  spdlog::info("Filesystem watcher started");
 
   try {
     watcher.start();
@@ -253,7 +257,7 @@ void TaskWorkerFsWatcher(std::stop_token token) {
  */
 void TaskWorker_Context(std::stop_token token) {
   using namespace std::chrono_literals;
-  const auto waitDurationDef = 3000ms;
+  const auto waitDurationDef = 4000ms;
 
   // Register a stop callback
   std::stop_callback stop_cb(token, [&]() {
@@ -268,14 +272,14 @@ void TaskWorker_Context(std::stop_token token) {
   while (true) {
     // observe serves states
     sooner = context.Serve(waitDurationDef);
-    {
+    if( sooner.count() > 0 ) {
       spdlog::info("condition waits for is {} ms", sooner.count());
       // Start of locked block
       std::unique_lock lck(task_event_concrete.event_mutex);
-      task_event_concrete.event_condition.wait_for(lck, sooner, [&, token]() {
+      task_event_concrete.event_condition.wait_for(lck, sooner/*, [&, token]() {
         // Condition for wake up
         return token.stop_requested();
-      });
+      }*/);
 
       //Stop if requested to stop
       if (token.stop_requested()) {
@@ -335,6 +339,7 @@ int main(int argc, char** argv) {
   // set token to stop all worker
   stop_src.request_stop();
 
+  spdlog::info("Wakeup all tasks");
   // wakeup all tasks
   WakeUpRunningTasks(true);
 

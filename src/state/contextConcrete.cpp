@@ -43,9 +43,6 @@ std::chrono::milliseconds ConcreteContext::Serve(const std::chrono::milliseconds
     }
   }
 
-  if (res_sooner.count() <= 0) {
-    res_sooner = 1ms;
-  }
   return res_sooner;
 }
 

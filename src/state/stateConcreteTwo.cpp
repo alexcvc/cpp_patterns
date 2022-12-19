@@ -18,9 +18,9 @@ using namespace std::chrono_literals;
 namespace state {
 
 void StateConcreteTwo::DoEnter() {
-  spdlog::info("enter to  state 2. Wait 5 sec");
+  spdlog::info("enter to  state 2. Wait 6 sec");
   // start timer for recreating the file
-  m_contextPtr->TimerRestart(5s);
+  m_contextPtr->TimerRestart(6s);
 }
 
 std::optional<std::unique_ptr<State<ConcreteContext>>> state::StateConcreteTwo::DoServe() {
